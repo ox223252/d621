@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<style>
+			html, body, section, canvas
+			{
+				height: 100%;
+				width:100%;
+				padding: 0;
+				margin: 0;
+				overflow: hidden;
+				background: "#111";
+			}
+			.cPrint
+			{
+				position:fixed;
+				top:0;
+				left:0;
+			}
+		</style>
+		<style>/* switch */
+			/* The switch - the box around the slider */
+			.switch {
+				position: relative;
+				display: inline-block;
+				width: 60px;
+				height: 34px;
+			}
+
+			/* Hide default HTML checkbox */
+			.switch input {display:none;}
+
+			/* The slider */
+			.slider {
+				position: absolute;
+				cursor: pointer;
+				top: 0;
+				left: 0;
+				right: 0;
+				bottom: 0;
+				background-color: #ccc;
+				-webkit-transition: .4s;
+				transition: .4s;
+			}
+
+			.slider:before {
+				position: absolute;
+				content: "";
+				height: 26px;
+				width: 26px;
+				left: 4px;
+				bottom: 4px;
+				background-color: white;
+				-webkit-transition: .4s;
+				transition: .4s;
+			}
+
+			input:checked + .slider {
+				background-color: #2196F3;
+			}
+
+			input:focus + .slider {
+				box-shadow: 0 0 1px #2196F3;
+			}
+
+			input:checked + .slider:before {
+				-webkit-transform: translateX( 26px );
+				-ms-transform: translateX( 26px );
+				transform: translateX( 26px );
+
+			}
+
+			/* Rounded sliders */
+			.slider.round {
+				border-radius: 34px;
+			}
+
+			.slider.round:before {
+				border-radius: 50%;
+			} 
+		</style>
+	</head>
+	<body>
+		<!-- http://seb.ly/2011/04/multi-touch-game-controller-in-javascripthtml5-for-ipad/ -->
+		<section class="container-fluide" id="dataBody">
+			<canvas id="cVideo" style="z-index:0;" class="cPrint"></canvas>
+			<canvas id="cData" style="z-index:1;" class="cPrint"></canvas>
+		</section>
+		<script src="/socket.io/socket.io.js"></script>
+		<script type="text/javascript"> // global vars
+			var socket = io.connect ( window.location.origin );
+			var touchable = 'createTouch' in document;
+
+			var canvasVideo = document.getElementById ( 'cVideo' );
+			var canvasData = document.getElementById ( 'cData' );
+
+			// set canvas sizes
+			canvasVideo.width = window.innerWidth;
+			canvasData.width = window.innerWidth;
+
+			canvasVideo.height = window.innerHeight;
+			canvasData.height = window.innerHeight;
+
+
+			var cVideo = canvasVideo.getContext ( '2d' );
+			var cData = canvasData.getContext ( '2d' );
+		</script>
+		<script type="text/javascript"> // cVideo
+			var img = new Image;
+			img.addEventListener ( 'load', function ( e )
+			{
+				drawVideo ( );
+			});
+			function drawVideo ( )
+			{
+				cVideo.clearRect ( 0, 0, canvasVideo.width, canvasVideo.height );
+				cVideo.fillStyle = "#111";
+				cVideo.fillRect ( 0, 0, canvasVideo.width, canvasVideo.height );
+
+				if ( !img.naturalWidth )
+				{
+					return;
+				}
+
+				var rX = canvasVideo.width / img.naturalWidth;
+				var rY = canvasVideo.height / img.naturalHeight;
+
+				var x = ( canvasVideo.width - img.naturalWidth * rY ) / 2;
+				var y = ( canvasVideo.height - img.naturalHeight * rX ) / 2;
+
+				if ( rX < 1 )
+				{
+					cVideo.drawImage ( 
+						img, 
+						0, 
+						y, 
+						canvasVideo.width, 
+						img.naturalHeight * rX );
+				}
+				else if ( rY < 1 )
+				{
+					cVideo.drawImage ( 
+						img, 
+						x, 
+						0, 
+						img.naturalWidth * rY, 
+						canvasVideo.height );
+				}
+				else
+				{
+					x = ( canvasVideo.width - img.naturalWidth ) / 2;
+					y = ( canvasVideo.height - img.naturalHeight ) / 2;
+					cVideo.drawImage ( img, x, y, img.naturalWidth, img.naturalHeight );
+				}
+
+				// cVideo.beginPath ( );
+				// cVideo.font = textHeight + "px Courier New";
+				// cVideo.fillStyle = "green";
+				// cVideo.fillText ( "x: " + x + " y: " + y, 10, textHeight * 4 );
+				// cVideo.fillText ( "x: " + rX + " y: " + rY, 10, textHeight * 5 );
+			}
+			socket.on ( 'img', function ( data )
+			{
+				img.src = 'data:image/jpg;base64,' + data;
+			});
+		</script>
+		<script type="text/javascript">
+			function drawData ( )
+			{
+				cData.clearRect ( 0, 0, canvasData.width, canvasData.height );
+				for ( var i=0; i < touches.length; i++ )
+				{
+					cData.beginPath (); 
+					cData.strokeStyle = "cyan";
+					cData.lineWidth = "6";
+					cData.arc ( touches[ i ].clientX, touches[ i ].clientY, 40, 0, Math.PI*2, true );
+					cData.stroke ();
+				}
+
+				cData.beginPath ( );
+				cData.font = textHeight + "px Courier New";
+				cData.fillStyle = "orange";
+				cData.fillText ( "speed: " + move.speed + "%", 10, textHeight  );
+				cData.fillText ( "dir: " + move.dir + "°", 10, textHeight * 2 );
+			}
+		</script>
+		<script type="text/javascript"> // screen selection
+			if ( touchable | true )
+			{ // touch scrren
+				// http://demos.seb.ly/JSTouchController/Touches.html
+
+				var container, move = {};
+				var touches = [], touchesStart = []; // array of touch vectors
+				var textHeight = 20;
+
+				move.startSpeed = 0;
+				move.startDir = 0;
+
+				move.speed = 0;
+				move.dir = 0;
+
+				textHeight = window.innerHeight / 20;
+				if ( textHeight > 40 )
+				{
+					textHeight = 40;
+				}
+
+				drawVideo ( );
+				drawData ( );
+
+				window.addEventListener ( 'touchstart', onTouchStart, false );
+				window.addEventListener ( 'touchmove', onTouchMove, false );
+				window.addEventListener ( 'touchend', onTouchEnd, false );
+				window.onorientationchange = resetCanvas;
+				window.onresize = resetCanvas;
+
+				function resetCanvas ( e )
+				{
+					canvasVideo.width = window.innerWidth;
+					canvasData.width = window.innerWidth;
+
+					canvasVideo.height = window.innerHeight;
+					canvasData.height = window.innerHeight;
+
+					window.scrollTo ( 0, 0 );
+
+					textHeight = window.innerHeight / 20;
+
+					if ( textHeight > 40 )
+					{
+						textHeight = 40;
+					}
+					drawVideo ( );
+					drawData ( );
+				}
+
+				function calcValues ( e )
+				{
+					for ( var i = 0; i < e.touches.length; i++ )
+					{
+						if ( e.touches[ i ].identifier == touchesStart[ i ].identifier )
+						{
+							switch ( touchesStart[ i ].element )
+							{
+								case 'speed':
+								{ // speed and dir calc part
+									// speed calc
+									move.speed = Math.floor ( ( e.touches[ i ].clientY - touchesStart[ i ].clientY ) * -0.5 );
+
+									move.speed += move.startSpeed;
+
+									if ( move.speed > 100 )
+									{
+										move.speed = 100;
+									}
+									else if ( move.speed < -100 )
+									{
+										move.speed = -100;
+									}
+									
+									socket.emit ( 'speed', move.speed );
+									
+									break;
+								}
+								case 'dir':
+								{
+									// dir calc
+									move.dir = Math.floor ( ( e.touches[ i ].clientX - touchesStart[ i ].clientX ) * 0.2 );
+
+									move.dir += parseInt ( move.startDir );
+
+									if ( move.dir > 45 )
+									{
+										move.dir = 45;
+									}
+									else if ( move.dir < -45 )
+									{
+										move.dir = -45;
+									}
+
+									socket.emit ( 'dir', move.dir );
+									break;
+								}
+							}
+							break;
+						}
+					}
+				}
+
+				function onTouchStart ( e ) 
+				{
+					var __speed = false;
+					var __dir = false;
+					touches = e.touches; 
+					touchesStart = e.touches;
+
+					drawData ( );
+
+					for ( var i = 0; i < e.touches.length; i++ )
+					{
+						if ( e.touches[ i ].clientX > window.innerWidth / 2 )
+						{
+							if ( __speed )
+							{
+								continue;
+							}
+							touchesStart[ i ].element = 'speed';
+							__speed = true;
+						}
+						else
+						{
+							if ( __dir )
+							{
+								continue;
+							}
+							touchesStart[ i ].element = 'dir';
+							__dir = true;
+						}
+					}
+				}
+				 
+				function onTouchMove ( e )
+				{
+					e.preventDefault ();
+					touches = e.touches;
+					calcValues ( e );
+				} 
+				 
+				function onTouchEnd ( e )
+				{
+					touches = e.touches;
+					move.startSpeed = move.speed;
+					move.startDir = move.dir;
+					drawData ( );
+				}
+
+				socket.emit ( 'connect' );
+
+				socket.on ( 'speed', function ( data )
+				{
+					move.speed = parseInt ( data ) | 0;
+					drawData ( );
+				});
+				socket.on ( 'dir', function ( data )
+				{
+					move.dir = parseInt ( data );
+					drawData ( );
+				});
+			}
+		</script>
+	</body>
+</html>

@@ -1,0 +1,26 @@
+{
+  "name": "D621",
+  "license": "GPLv2",
+  "private": true,
+  "description": "Software to drive my D621 model warship ",
+  "engin": {
+    "node": ">=9.10.1"
+  },
+  "os": [
+    "linux"
+  ],
+  "version": "0.0.1",
+  "main": "D621.js",
+  "dependencies": {
+    "adafruit-pca9685": "^0.1.4",
+    "body-parser": "^1.18.2",
+    "crypto": "^1.0.1",
+    "ejs": "^2.6.1",
+    "express": "^4.16.3",
+    "fs": "0.0.1-security",
+    "i2c-bus": "^3.2.0",
+    "node-mcp23017": "^0.0.2",
+    "pca9685": "^4.0.3",
+    "socket.io": "^2.1.0"
+  }
+}

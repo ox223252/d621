@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<style>
+			html, body, section, canvas
+			{
+				height: 100%;
+				width:100%;
+				padding: 0;
+				margin: 0;
+				overflow: hidden;
+			}
+			table, form
+			{
+				width:100%;
+				height:100%;
+			}
+			.cPrint
+			{
+				position:fixed;
+				top:0;
+				left:0;
+			}
+			.configScreen
+			{
+				position:fixed;
+				z-index:10;
+				top:0;
+				left:0;
+				margin: 0;
+				padding: 0;
+				width:100%;
+				height:100%;
+				overflow: auto;
+				background-color: rgba( 200, 200, 200, 0.9);
+			}
+			.configLi, .configEl
+			{
+				font-size: 2em;
+			}
+			.configLi input[type=checkbox], .configEl input[type=radio]
+			{
+				-ms-transform: scale(2); /* IE */
+				-moz-transform: scale(2); /* FF */
+				-webkit-transform: scale(2); /* Safari and Chrome */
+				-o-transform: scale(2); /* Opera */
+				width: 2em;
+				display: inline;
+			}
+			.configEl
+			{
+				margin:10px;
+				width:calc( 100% - 20px );
+				height:calc( 100% - 20px );
+				overflow: hidden;
+				border: solid 1px black;
+			}
+			#mainMenu
+			{
+				display:none;
+				overflow-y: scroll;
+			}
+		</style>
+		<style>/* switch */
+			/* The switch - the box around the slider */
+			.switch {
+				position: relative;
+				display: inline-block;
+				width: 60px;
+				height: 34px;
+			}
+
+			/* Hide default HTML checkbox */
+			.switch input {display:none;}
+
+			/* The slider */
+			.slider {
+				position: absolute;
+				cursor: pointer;
+				top: 0;
+				left: 0;
+				right: 0;
+				bottom: 0;
+				background-color: #ccc;
+				-webkit-transition: .4s;
+				transition: .4s;
+			}
+
+			.slider:before {
+				position: absolute;
+				content: "";
+				height: 26px;
+				width: 26px;
+				left: 4px;
+				bottom: 4px;
+				background-color: white;
+				-webkit-transition: .4s;
+				transition: .4s;
+			}
+
+			input:checked + .slider {
+				background-color: #2196F3;
+			}
+
+			input:focus + .slider {
+				box-shadow: 0 0 1px #2196F3;
+			}
+
+			input:checked + .slider:before {
+				-webkit-transform: translateX( 26px );
+				-ms-transform: translateX( 26px );
+				transform: translateX( 26px );
+
+			}
+
+			/* Rounded sliders */
+			.slider.round {
+				border-radius: 34px;
+			}
+
+			.slider.round:before {
+				border-radius: 50%;
+			} 
+		</style>
+	</head>
+	<body>
+		<!-- http://seb.ly/2011/04/multi-touch-game-controller-in-javascripthtml5-for-ipad/ -->
+		<section class="container-fluide" id="dataBody">
+			<canvas id="cVideo" style="z-index:0;" class="cPrint"></canvas>
+			<canvas id="cStaticDisplay" style="z-index:1;" class="cPrint"></canvas>
+			<canvas id="cCameraAngle" style="z-index:2;" class="cPrint"></canvas>
+			<canvas id="cMag" style="z-index:3;" class="cPrint"></canvas>
+			<canvas id="cData" style="z-index:4;" class="cPrint"></canvas>
+		</section>
+		<section class="configScreen" id="mainMenu">
+			<div style="margin-left:20px" class="configLi" id="configLi">
+				<input type="checkbox" value="LRConfigScreen" /> <a href="#LRConfigScreen">power</a><br>
+				<input type="checkbox" value="cameraConfigScreen" /> <a href="#cameraConfigScreen">camera</a><br>
+				<input type="checkbox" value="boussoleConfigScreen" /> <a href="#boussoleConfigScreen">boussole</a><br>
+				<input type="checkbox" value="assietteConfigScreen" checked/> <a href="#assietteConfigScreen">assiette</a><br>
+				<input type="checkbox" value="" disabled id="recoForme"/> recoForme<br>
+				<input type="checkbox" value="navDataConfigScreen"/> <a href="#navDataConfigScreen">données de navigation</a><br>
+				<div style="text-align:right; margin-right:20px">
+					<button id="closeMenuA">Close</button>
+				</div>
+			</div>
+			<div class="configEl" id="LRConfigScreen">
+				<table>
+					<tr>
+						<td style="border-right:solid 1px black">
+							<input type="radio" name="LConfigChoice" value="camera" id="camLConfigChoice">Cam<br>
+							<input type="radio" name="LConfigChoice" value="power" id="powerLConfigChoice" checked>Power<br>
+						</td>
+						<td style="text-align:right">
+							<input type="radio" name="RConfigChoice" value="camera" id="camRConfigChoice" checked>Cam<br>
+							<input type="radio" name="RConfigChoice" value="power" id="powerRConfigChoice">Power<br>
+						</td>
+					</tr>
+				</table>
+			</div>
+			<div class="configEl" id="cameraConfigScreen">
+				<form id="formCameraConfigScreen">
+					<table>
+						<tr>
+							<td style="border-right:solid 1px black;border-bottom:solid 1px black">
+								<input type="radio" name="camConfigChoice" value="top-left"><img src="th.jpg" width="100px">
+							</td>
+							<td style="text-align:right;border-bottom:solid 1px black">
+								<img src="th.jpg" width="100px"><input type="radio" name="camConfigChoice" value="top-rigth">
+							</td>
+						</tr>
+						<tr>
+							<td style="border-right:solid 1px black">
+								<input type="radio" name="camConfigChoice" value="bottom-left"><img src="th.jpg" width="100px">
+							</td>
+							<td style="text-align:right">
+								<img src="th.jpg" width="100px"><input type="radio" name="camConfigChoice" value="bottom-right" checked>
+							</td>
+						</tr>
+					</table>
+				</form>
+			</div>
+			<div class="configEl" id="boussoleConfigScreen">
+				<canvas id="boussoleConfigCanvas"></canvas>
+			</div>
+			<div class="configEl" id="assietteConfigScreen">
+				<canvas id="assietteConfigCanvas"></canvas>
+			</div>
+			<div class="configEl" id="navDataConfigScreen">
+				<form id="formnavDataConfigScreen">
+					<table>
+						<tr>
+							<td style="border-right:solid 1px black;border-bottom:solid 1px black">
+								<input type="radio" name="navDataConfigChoice" value="top-left" checked><img src="thG7N90X3F.jpg" width="100px">
+							</td>
+							<td style="text-align:right;border-bottom:solid 1px black">
+								<img src="thG7N90X3F.jpg" width="100px"><input type="radio" name="navDataConfigChoice" value="top-rigth">
+							</td>
+						</tr>
+						<tr>
+							<td style="border-right:solid 1px black">
+								<input type="radio" name="navDataConfigChoice" value="bottom-left"><img src="thG7N90X3F.jpg" width="100px">
+							</td>
+							<td style="text-align:right">
+								<img src="thG7N90X3F.jpg" width="100px"><input type="radio" name="navDataConfigChoice" value="bottom-right">
+							</td>
+						</tr>
+					</table>
+				</form>
+			</div>
+			<div style="text-align:right; margin-right:20px">
+				<button id="closeMenuB">Close</button>
+			</div>
+		</section>
+		<script src="/socket.io/socket.io.js"></script>
+		<script type="text/javascript"> // global vars
+			var touchable = 'createTouch' in document;
+			var socket = io.connect ( window.location.origin );
+			
+			var camLR = 'right';
+			var camAngle = 'bottom-right';
+			var boussole = 'top';
+			var assiette = 'left';
+			var recoForme = false;
+			var dataAngle = 'top-left';
+
+
+			var canvasVideo = document.getElementById ( 'cVideo' );
+			var canvasStaticDisplay = document.getElementById ( 'cStaticDisplay' );
+			var canvasCameraAngle = document.getElementById ( 'cCameraAngle' );
+			var canvasMag = document.getElementById ( 'cMag' );
+			var canvasData = document.getElementById ( 'cData' );
+
+			// set canvas sizes
+			canvasVideo.width = window.innerWidth;
+			canvasStaticDisplay.width = window.innerWidth;
+			canvasCameraAngle.width = window.innerWidth;
+			canvasMag.width = window.innerWidth;
+			canvasData.width = window.innerWidth;
+
+			canvasVideo.height = window.innerHeight;
+			canvasStaticDisplay.height = window.innerHeight;
+			canvasCameraAngle.height = window.innerHeight;
+			canvasMag.height = window.innerHeight;
+			canvasData.height = window.innerHeight;
+
+
+			var cVideo = canvasVideo.getContext ( '2d' );
+			var cStaticDisplay = canvasStaticDisplay.getContext ( '2d' );
+			var cCameraAngle = canvasCameraAngle.getContext ( '2d' );
+			var cMag = canvasMag.getContext ( '2d' );
+			var cData = canvasData.getContext ( '2d' );
+		</script>
+		<script type="text/javascript"> // cVideo
+			var img = new Image;
+			img.addEventListener ( 'load', function ( e )
+			{
+				cVideo.clearRect ( 0, 0, canvasVideo.width, canvasVideo.height );
+				cVideo.drawImage ( img, 0, 0, canvasVideo.width, canvasVideo.height );
+			});function drawVideo ( )
+			{
+				cVideo.clearRect ( 0, 0, canvasVideo.width, canvasVideo.height );
+				cVideo.fillStyle = "#111";
+				cVideo.fillRect ( 0, 0, canvasVideo.width, canvasVideo.height );
+
+				if ( !img.naturalWidth )
+				{
+					return;
+				}
+
+				var rX = canvasVideo.width / img.naturalWidth;
+				var rY = canvasVideo.height / img.naturalHeight;
+
+				var x = ( canvasVideo.width - img.naturalWidth * rY ) / 2;
+				var y = ( canvasVideo.height - img.naturalHeight * rX ) / 2;
+
+				if ( rX < 1 )
+				{
+					cVideo.drawImage ( 
+						img, 
+						0, 
+						y, 
+						canvasVideo.width, 
+						img.naturalHeight * rX );
+				}
+				else if ( rY < 1 )
+				{
+					cVideo.drawImage ( 
+						img, 
+						x, 
+						0, 
+						img.naturalWidth * rY, 
+						canvasVideo.height );
+				}
+				else
+				{
+					x = ( canvasVideo.width - img.naturalWidth ) / 2;
+					y = ( canvasVideo.height - img.naturalHeight ) / 2;
+					cVideo.drawImage ( img, x, y, img.naturalWidth, img.naturalHeight );
+				}
+
+				// cVideo.beginPath ( );
+				// cVideo.font = textHeight + "px Courier New";
+				// cVideo.fillStyle = "green";
+				// cVideo.fillText ( "x: " + x + " y: " + y, 10, textHeight * 4 );
+				// cVideo.fillText ( "x: " + rX + " y: " + rY, 10, textHeight * 5 );
+			}
+			function drawVideo ( )
+			{
+				cVideo.clearRect ( 0, 0, canvasVideo.width, canvasVideo.height );
+				cVideo.fillStyle = "#111";
+				cVideo.fillRect ( 0, 0, canvasVideo.width, canvasVideo.height );
+
+				if ( !img.naturalWidth )
+				{
+					return;
+				}
+
+				var rX = canvasVideo.width / img.naturalWidth;
+				var rY = canvasVideo.height / img.naturalHeight;
+
+				var x = ( canvasVideo.width - img.naturalWidth * rY ) / 2;
+				var y = ( canvasVideo.height - img.naturalHeight * rX ) / 2;
+
+				if ( rX < 1 )
+				{
+					cVideo.drawImage ( 
+						img, 
+						0, 
+						y, 
+						canvasVideo.width, 
+						img.naturalHeight * rX );
+				}
+				else if ( rY < 1 )
+				{
+					cVideo.drawImage ( 
+						img, 
+						x, 
+						0, 
+						img.naturalWidth * rY, 
+						canvasVideo.height );
+				}
+				else
+				{
+					cVideo.drawImage ( img, x, y, img.naturalWidth, img.naturalHeight );
+				}
+
+				cVideo.beginPath ( );
+				cVideo.font = textHeight + "px Courier New";
+				cVideo.fillStyle = "green";
+				cVideo.fillText ( "x: " + x + " y: " + y, 10, textHeight * 4 );
+				cVideo.fillText ( "x: " + rX + " y: " + rY, 10, textHeight * 5 );
+			}
+			socket.on ( 'img', function ( data )
+			{
+				img.src = 'data:image/jpg;base64,' + data;
+			});
+		</script>
+		<script type="text/javascript"> // statics display
+			
+		</script>
+		<script type="text/javascript"> // screen selection
+			if ( touchable | true )
+			{ // touch scrren
+				// http://demos.seb.ly/JSTouchController/Touches.html
+
+				var container, move = {};
+				var touches = [], touchesStart = []; // array of touch vectors
+				var textHeight = 20;
+
+				move.startSpeed = 0;
+				move.startDir = 0;
+
+				move.speed = 0;
+				move.dir = 0;
+
+				textHeight = window.innerHeight / 20;
+				if ( textHeight > 40 )
+				{
+					textHeight = 40;
+				}
+
+				drawVideo ( );
+				drawData ( );
+				drawSaticDisplay ( );
+
+				window.addEventListener ( 'touchstart', onTouchStart, false );
+				window.addEventListener ( 'touchmove', onTouchMove, false );
+				window.addEventListener ( 'touchend', onTouchEnd, false );
+				window.onorientationchange = resetCanvas;
+				window.onresize = resetCanvas;
+
+				function resetCanvas ( e )
+				{
+					canvasVideo.width = window.innerWidth;
+					canvasStaticDisplay.width = window.innerWidth;
+					canvasCameraAngle.width = window.innerWidth;
+					canvasMag.width = window.innerWidth;
+					canvasData.width = window.innerWidth;
+
+					canvasVideo.height = window.innerHeight;
+					canvasStaticDisplay.height = window.innerHeight;
+					canvasCameraAngle.height = window.innerHeight;
+					canvasMag.height = window.innerHeight;
+					canvasData.height = window.innerHeight;
+
+					window.scrollTo ( 0, 0 );
+
+					textHeight = window.innerHeight / 20;
+
+					if ( textHeight > 40 )
+					{
+						textHeight = 40;
+					}
+					drawVideo ( );
+					drawData ( );
+				}
+
+				function drawData ( )
+				{
+					cData.clearRect ( 0, 0, canvasData.width, canvasData.height );
+					for ( var i=0; i < touches.length; i++ )
+					{
+						cData.beginPath (); 
+						cData.strokeStyle = "cyan";
+						cData.lineWidth = "6";
+						cData.arc ( touches[ i ].clientX, touches[ i ].clientY, 40, 0, Math.PI*2, true ); 
+						cData.stroke ();
+					}
+
+					cData.beginPath ( );
+					cData.font = textHeight + "px Courier New";
+					cData.fillStyle = "orange";
+					cData.fillText ( "speed: " + move.speed + "%", 10, textHeight  );
+					cData.fillText ( "dir: " + move.dir + "°", 10, textHeight * 2 );
+				}
+
+				function drawSaticDisplay ( )
+				{
+
+					cStaticDisplay.clearRect ( 0, 0, canvasStaticDisplay.width, canvasStaticDisplay.height );
+					
+					var img = new Image;
+					img.src = "imgs/menu.png";
+					img.width = "128px";
+					img.onload = function ()
+					{
+						cStaticDisplay.drawImage ( img, window.innerWidth - 128, 0, 128, 128 );
+					};
+
+					cStaticDisplay.beginPath();
+					cStaticDisplay.strokeStyle = "#fff";
+
+					cStaticDisplay.moveTo ( window.innerWidth / 8 * 7 + 5, window.innerheight / 9 * 6 );
+					cStaticDisplay.lineTo ( window.innerWidth / 8 * 7 + 5, window.innerheight / 9 * 8 );
+					cStaticDisplay.lineTo ( window.innerWidth / 8 * 7 - 5, window.innerheight / 9 * 8 );
+					cStaticDisplay.lineTo ( window.innerWidth / 8 * 7 - 5, window.innerheight / 9 * 6 );
+					cStaticDisplay.arcTo ( window.innerWidth / 8 * 7, window.innerheight / 9 * 5,
+						window.innerWidth / 8 * 7 - 5, window.innerheight / 9 * 5, 1000 );
+					cStaticDisplay.stroke ( );
+				}
+
+				function calcValues ( e )
+				{
+					for ( var i = 0; i < e.touches.length; i++ )
+					{
+						if ( e.touches[ i ].identifier == touchesStart[ i ].identifier )
+						{
+							switch ( touchesStart[ i ].element )
+							{
+								case 'speed/dir':
+								{ // speed and dir calc part
+									// speed calc
+									move.speed = Math.floor ( ( e.touches[ i ].clientY - touchesStart[ i ].clientY ) * -0.5 );
+
+									move.speed += move.startSpeed;
+
+									if ( move.speed > 100 )
+									{
+										move.speed = 100;
+									}
+									else if ( move.speed < -100 )
+									{
+										move.speed = -100;
+									}
+									
+									socket.emit ( 'speed', move.speed );
+									
+									// dir calc
+									move.dir = Math.floor ( ( e.touches[ i ].clientX - touchesStart[ i ].clientX ) * 0.2 );
+
+									move.dir += parseInt ( move.startDir );
+
+									if ( move.dir > 45 )
+									{
+										move.dir = 45;
+									}
+									else if ( move.dir < -45 )
+									{
+										move.dir = -45;
+									}
+
+									socket.emit ( 'dir', move.dir );
+									break;
+								}
+								case 'cam':
+								{
+									break;
+								}
+							}
+							break;
+						}
+					}
+				}
+
+				/*	
+				 *	Touch event ( e ) properties : 
+				 *	e.touches: 			Array of touch objects for every finger currently touching the screen
+				 *	e.targetTouches: 	Array of touch objects for every finger touching the screen that
+				 *						originally touched down on the DOM object the transmitted the event.
+				 *	e.changedTouches	Array of touch objects for touches that are changed for this event. 					
+				 *						I'm not sure if this would ever be a list of more than one, but would 
+				 *						be bad to assume. 
+				 *
+				 *	Touch objects : 
+				 *
+				 *	identifier: An identifying number, unique to each touch event
+				 *	target: DOM object that broadcast the event
+				 *	clientX: X coordinate of touch relative to the viewport ( excludes scroll offset )
+				 *	clientY: Y coordinate of touch relative to the viewport ( excludes scroll offset )
+				 *	screenX: Relative to the screen
+				 *	screenY: Relative to the screen
+				 *	pageX: Relative to the full page ( includes scrolling )
+				 *	pageY: Relative to the full page ( includes scrolling )
+				 */	
+				function onTouchStart ( e ) 
+				{
+					var __speed = false;
+					var __dir = false;
+					touches = e.touches; 
+					touchesStart = e.touches;
+
+					drawData ( );
+
+					if ( e.changedTouches[ 0 ].clientX > ( window.innerWidth - 128 ) &&
+						e.changedTouches[ 0 ].clientY < 128 )
+					{
+						document.getElementById ( 'mainMenu' ).style.display = 'inline-block';
+
+						window.removeEventListener ( 'touchstart', onTouchStart, false );
+						window.removeEventListener ( 'touchmove', onTouchMove, false );
+						return;
+					}
+					else if ( camLR == 'right' )
+					{
+						for ( var i = 0; i < e.touches.length; i++ )
+						{
+							if ( e.touches[ i ].clientX < window.innerWidth / 2 )
+							{
+								if ( __speed )
+								{
+									continue;
+								}
+								touchesStart[ i ].element = 'speed/dir';
+								__speed = true;
+							}
+							else
+							{
+								if ( __dir )
+								{
+									continue;
+								}
+								touchesStart[ i ].element = 'cam';
+								__dir = true;
+							}
+						}
+					}
+					else
+					{
+						for ( var i = 0; i < e.touches.length; i++ )
+						{
+							if ( e.touches[ i ].clientX > window.innerWidth / 2 )
+							{
+								if ( __speed )
+								{
+									continue;
+								}
+								touchesStart[ i ].element = 'speed/dir';
+								__speed = true;
+							}
+							else
+							{
+								if ( __dir )
+								{
+									continue;
+								}
+								touchesStart[ i ].element = 'cam';
+								__dir = true;
+							}
+						}
+					}
+				}
+				 
+				function onTouchMove ( e )
+				{
+					e.preventDefault ();
+					touches = e.touches;
+					calcValues ( e );
+					drawData ( );
+				} 
+				 
+				function onTouchEnd ( e )
+				{
+					touches = e.touches;
+					move.startSpeed = move.speed;
+					move.startDir = move.dir;
+					drawData ( );
+				}
+
+				socket.emit ( 'connect' );
+
+				socket.on ( 'speed', function ( data )
+				{
+					move.speed = parseInt ( data ) | 0;
+					drawData ( );
+				});
+				socket.on ( 'dir', function ( data )
+				{
+					move.dir = parseInt ( data );
+					drawData ( );
+				});
+			}
+		</script>
+		<script type="text/javascript"> // configLi
+			(function(){
+				var list = document.getElementById( 'configLi' ).getElementsByTagName( 'input' );
+
+				for ( var i = 0; i < list.length; i++ )
+				{
+					if ( list[ i ].value == '' )
+					{
+						continue;
+					}
+
+					if ( list[ i ].checked )
+					{
+						document.getElementById( list[ i ].value ).style.display = '';
+					}
+					else
+					{
+						document.getElementById( list[ i ].value  ).style.display = 'none';
+					}
+
+					list[ i ].addEventListener( 'change', function ( e )
+					{
+						if ( e.target.checked )
+						{
+							document.getElementById( e.target.value ).style.display = '';
+						}
+						else
+						{
+							document.getElementById( e.target.value ).style.display = 'none';
+						}
+					});
+				}
+			})();
+		</script>
+		<script type="text/javascript"> // LRConfigScreen
+			(function(){
+				document.getElementById( 'camLConfigChoice' ).addEventListener( 'change', function ( e )
+				{
+					document.getElementById( 'powerRConfigChoice' ).checked = true;
+					camLR = 'left';
+				});
+
+				document.getElementById( 'powerLConfigChoice' ).addEventListener( 'change', function ( e )
+				{
+					camLR = 'right';
+					document.getElementById( 'camRConfigChoice' ).checked = true;
+				});
+
+				document.getElementById( 'powerRConfigChoice' ).addEventListener( 'change', function ( e )
+				{
+					camLR = 'left';
+					document.getElementById( 'camLConfigChoice' ).checked = true;
+				});
+
+				document.getElementById( 'camRConfigChoice' ).addEventListener( 'change', function ( e )
+				{
+					camLR = 'right';
+					document.getElementById( 'powerLConfigChoice' ).checked = true;
+				});
+			})();
+		</script>
+		<script type="text/javascript"> // cameraConfigScreen
+			(function(){
+				var camConfigChoice = document.getElementById( 'formCameraConfigScreen' );
+				for ( var i = 0; i < camConfigChoice.length; i++ )
+				{
+					camConfigChoice[ i ].addEventListener ( 'change', function ( e )
+					{
+						if ( e.target.checked )
+						{
+							camAngle = e.target.value;
+						}
+					});
+				}
+			})();
+		</script>
+		<script type="text/javascript"> // boussoleConfigScreen
+			(function(){
+				var canvas = document.getElementById( 'boussoleConfigCanvas' );
+				canvas.height = window.innerHeight;
+				canvas.width = window.innerWidth;
+				var c = canvas.getContext( '2d' );
+
+				var stepW = canvas.width / 15;
+				var stepH = canvas.height / 15;
+
+				function printBoussole ( position )
+				{
+					c.clearRect ( 0, 0, canvas.width, canvas.height );
+					
+					if ( position == 'top' )
+					{
+						c.strokeStyle = "#000000";
+						c.fillStyle = "#000000";
+					}
+					else if ( position == 'bottom' )
+					{
+						c.strokeStyle = "rgba(0,0,0,0.25)";
+						c.fillStyle = "rgba(0,0,0,0.25)";
+					}
+					
+					c.beginPath();
+					c.moveTo ( canvas.width / 2 - stepW * 2, stepH );
+					c.lineTo ( canvas.width / 2 - stepW * 2, stepH * 2 );
+
+					c.moveTo ( canvas.width / 2 - stepW, stepH );
+					c.lineTo ( canvas.width / 2 - stepW, stepH * 2 );
+
+					c.moveTo ( canvas.width / 2 - stepW / 2, stepH );
+					c.lineTo ( canvas.width / 2 + stepW / 2, stepH );
+					c.lineTo ( canvas.width / 2, stepH * 2 );
+					c.lineTo ( canvas.width / 2 - stepW / 2, stepH );
+
+					c.moveTo ( canvas.width / 2 + stepW * 2, stepH );
+					c.lineTo ( canvas.width / 2 + stepW * 2, stepH * 2 );
+
+					c.moveTo ( canvas.width / 2 + stepW, stepH );
+					c.lineTo ( canvas.width / 2 + stepW, stepH * 2 );
+					c.stroke();
+
+					c.font = "30px Arial";
+					c.fillText("N", canvas.width / 2 - 10, stepH * 2 + 30);
+					
+					if ( position == 'top' )
+					{
+						c.strokeStyle = "rgba(0,0,0,0.25)";
+						c.fillStyle = "rgba(0,0,0,0.25)";
+					}
+					else if ( position == 'bottom' )
+					{
+						c.strokeStyle = "#000000";
+						c.fillStyle = "#000000";
+					}
+
+					c.beginPath();
+					c.moveTo ( canvas.width / 2 - stepW * 2, canvas.height - stepH );
+					c.lineTo ( canvas.width / 2 - stepW * 2, canvas.height - stepH * 2 );
+
+					c.moveTo ( canvas.width / 2 - stepW, canvas.height - stepH );
+					c.lineTo ( canvas.width / 2 - stepW, canvas.height - stepH * 2 );
+
+					c.moveTo ( canvas.width / 2 - stepW / 2, canvas.height - stepH );
+					c.lineTo ( canvas.width / 2 + stepW / 2, canvas.height - stepH );
+					c.lineTo ( canvas.width / 2, canvas.height - stepH * 2 );
+					c.lineTo ( canvas.width / 2 - stepW / 2, canvas.height - stepH );
+
+					c.moveTo ( canvas.width / 2 + stepW * 2, canvas.height - stepH );
+					c.lineTo ( canvas.width / 2 + stepW * 2, canvas.height - stepH * 2 );
+
+					c.moveTo ( canvas.width / 2 + stepW, canvas.height - stepH );
+					c.lineTo ( canvas.width / 2 + stepW, canvas.height - stepH * 2 );
+					c.stroke();
+					
+					c.font = "30px Arial";
+					c.fillText("N", canvas.width / 2 - 10, canvas.height - stepH * 2 - 5);
+				}
+				printBoussole ( boussole );
+
+				canvas.addEventListener( 'click', function ( e )
+				{
+					if( e.clientY < canvas.height / 2)
+					{
+						boussole = 'top';
+					}
+					else
+					{
+						boussole = 'bottom';
+					}
+					printBoussole ( boussole );
+				});
+			})();
+		</script>
+		<script type="text/javascript"> // assietteConfigScreen
+			(function(){
+				var canvas = document.getElementById( 'assietteConfigCanvas' );
+				canvas.height = window.innerHeight;
+				canvas.width = window.innerWidth;
+				var c = canvas.getContext( '2d' );
+
+				var stepW = canvas.width / 20;
+				var stepH = canvas.height / 10;
+
+				function printAssiette ( position )
+				{
+					c.clearRect ( 0, 0, canvas.width, canvas.height );
+					
+					if ( position == 'right' )
+					{
+						c.strokeStyle = "#000000";
+					}
+					else if ( position == 'left' )
+					{
+						c.strokeStyle = "rgba(0,0,0,0.25)";
+					}
+
+					c.beginPath();
+					
+					c.moveTo ( canvas.width - stepW, canvas.height / 2 - stepH * 2 );
+					c.lineTo ( canvas.width - stepW * 2, canvas.height / 2 - stepH * 2 );
+					
+					c.moveTo ( canvas.width - stepW, canvas.height / 2 - stepH );
+					c.lineTo ( canvas.width - stepW * 2, canvas.height / 2 - stepH );
+					
+					c.moveTo ( canvas.width - stepW, canvas.height / 2 - stepH / 2 );
+					c.lineTo ( canvas.width - stepW * 2, canvas.height / 2 );
+					c.lineTo ( canvas.width - stepW, canvas.height / 2 + stepH / 2 );
+					c.lineTo ( canvas.width - stepW, canvas.height / 2 - stepH / 2 );
+
+					c.moveTo ( canvas.width - stepW, canvas.height / 2 + stepH * 2 );
+					c.lineTo ( canvas.width - stepW * 2, canvas.height / 2 + stepH * 2 );
+					
+					c.moveTo ( canvas.width - stepW, canvas.height / 2 + stepH );
+					c.lineTo ( canvas.width - stepW * 2, canvas.height / 2 + stepH );
+
+					c.stroke();
+
+					if ( position == 'right' )
+					{
+						c.strokeStyle = "rgba(0,0,0,0.25)";
+					}
+					else if ( position == 'left' )
+					{
+						c.strokeStyle = "#000000";
+					}
+					
+					c.beginPath();
+
+					c.moveTo ( stepW, canvas.height / 2 - stepH * 2 );
+					c.lineTo ( stepW * 2, canvas.height / 2 - stepH * 2 );
+					
+					c.moveTo ( stepW, canvas.height / 2 - stepH );
+					c.lineTo ( stepW * 2, canvas.height / 2 - stepH );
+					
+					c.moveTo ( stepW, canvas.height / 2 - stepH / 2 );
+					c.lineTo ( stepW * 2, canvas.height / 2 );
+					c.lineTo ( stepW, canvas.height / 2 + stepH / 2 );
+					c.lineTo ( stepW, canvas.height / 2 - stepH / 2 );
+
+					c.moveTo ( stepW, canvas.height / 2 + stepH * 2 );
+					c.lineTo ( stepW * 2, canvas.height / 2 + stepH * 2 );
+					
+					c.moveTo ( stepW, canvas.height / 2 + stepH );
+					c.lineTo ( stepW * 2, canvas.height / 2 + stepH );
+
+					c.stroke();
+				}
+				printAssiette ( assiette );
+
+				canvas.addEventListener( 'click', function ( e )
+				{
+					if( e.clientX < canvas.width / 2)
+					{
+						assiette = 'left';
+					}
+					else
+					{
+						assiette = 'right';
+					}
+					printAssiette ( assiette );
+				});
+			})();
+		</script>
+		<script type="text/javascript"> // recoForme
+			var recoForme = document.getElementById( 'recoForme' ).checked;
+			document.getElementById( 'recoForme' ).addEventListener ( 'change', function ( e ) 
+			{
+				recoForme = e.target.checked;
+			});
+		</script>
+		<script type="text/javascript"> // navDataConfigScreen
+			(function(){
+				var camConfigChoice = document.getElementById( 'formnavDataConfigScreen' );
+				for ( var i = 0; i < camConfigChoice.length; i++ )
+				{
+					camConfigChoice[ i ].addEventListener ( 'change', function ( e )
+					{
+						if ( e.target.checked )
+						{
+							camAngle = e.target.value;
+						}
+					});
+				}
+			})();
+		</script>
+		<script type="text/javascript"> // close config menu
+			document.getElementById ( 'closeMenuA' ).addEventListener ( 'click' ,function (e )
+			{
+				document.getElementById ( 'mainMenu' ).style.display = 'none';
+
+				window.addEventListener ( 'touchstart', onTouchStart, false );
+				window.addEventListener ( 'touchmove', onTouchMove, false );
+			});
+			document.getElementById ( 'closeMenuB' ).addEventListener ( 'click' ,function (e )
+			{
+				document.getElementById ( 'mainMenu' ).style.display = 'none';
+
+				window.addEventListener ( 'touchstart', onTouchStart, false );
+				window.addEventListener ( 'touchmove', onTouchMove, false );
+			});
+		</script>
+	</body>
+</html>
